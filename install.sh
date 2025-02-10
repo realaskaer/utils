@@ -8,22 +8,23 @@ function check_params() {
 }
 
 function check_os() {
-  KERNEL_NAME="$(uname -s)"
-  if [[ "$KERNEL_NAME" != "Linux" && "$KERNEL_NAME" != "Darwin" ]]; then
+  KERNEL_NAME="$1"
+  if [[ ! "$KERNEL_NAME" =~ ^(Linux|Darwin)$ ]]; then
     echo "$KERNEL_NAME is not supported"
     exit 1
   fi
 }
 
 function check_dir() {
+  SOFTWARE_NAME="$1"
   if [[ -n "$(ls -A)" ]]; then
-    echo "You need to install the software in an empty directory"
+    echo "You need to install $SOFTWARE_NAME in an empty directory"
     exit 1
   fi
 }
 
 function check_git() {
-  echo "Checking Git..."
+  echo "Checking Git"
   if ! command -v git &> /dev/null; then
     echo "Git is not installed"
     return 1
@@ -33,33 +34,51 @@ function check_git() {
   fi
 }
 
-function install_git() {
-  echo "Starting to install git..."
+function install_jq() {
+  echo "Starting to install jq"
   if command -v brew &> /dev/null; then
-    brew install git jq
+    brew install jq
   elif command -v apt &> /dev/null; then
-    sudo apt update && sudo apt install -y git jq
+    sudo apt update && sudo apt install -y jq
   elif command -v yum &> /dev/null; then
-    sudo yum install -y git jq
+    sudo yum install -y jq
   elif command -v dnf &> /dev/null; then
-    sudo dnf install -y git jq
+    sudo dnf install -y jq
   elif command -v zypper &> /dev/null; then
-    sudo zypper install -y git jq
+    sudo zypper install -y jq
+  else
+    echo "Package manager could not be defined, you need to install jq manually"
+    exit 1
+  fi
+}
+
+function install_git() {
+  echo "Starting to install git"
+  if command -v brew &> /dev/null; then
+    brew install git
+  elif command -v apt &> /dev/null; then
+    sudo apt update && sudo apt install -y git
+  elif command -v yum &> /dev/null; then
+    sudo yum install -y git
+  elif command -v dnf &> /dev/null; then
+    sudo dnf install -y git
+  elif command -v zypper &> /dev/null; then
+    sudo zypper install -y git
   else
     echo "Package manager could not be defined, you need to install git manually"
     exit 1
   fi
 }
 
-function install_software() {
+function download_software() {
   SOFTWARE_NAME="$1"
   KERNEL_NAME="$2"
 
-  echo "Starting to install $SOFTWARE_NAME..."
+  echo "Starting to download $SOFTWARE_NAME"
 
   RELEASE_DATA=$(curl -fsSL https://api.github.com/repos/askaer-solutions/$SOFTWARE_NAME/releases/latest)
 
-  if [[ "$KERNEL_NAME" == "Darwin" ]]; then
+  if [[ "$(uname -s)" == "Darwin" ]]; then
     DOWNLOAD_URL=$(echo "$RELEASE_DATA" | jq -r '.assets[] | select(.name | test("macOS")) | .browser_download_url')
     SOFTWARE_FILE="${SOFTWARE_NAME}_macOS"
   else
@@ -72,32 +91,29 @@ function install_software() {
     exit 1
   fi
 
-  echo "Downloading $SOFTWARE_NAME from $DOWNLOAD_URL..."
-  curl -fsSL -o "$SOFTWARE_FILE" "$DOWNLOAD_URL"
-
-  if [[ $? -ne 0 ]]; then
-    echo "Failed to download $SOFTWARE_NAME"
-    exit 1
-  fi
+  echo "Downloading $SOFTWARE_NAME from $DOWNLOAD_URL"
+  curl -fsSL -o "$SOFTWARE_FILE" "$DOWNLOAD_URL" || { echo "Failed to download $SOFTWARE_NAME"; exit 1; }
 
   chmod +x "$SOFTWARE_FILE"
 
-  echo "Installation has been successfully completed. You can now run the software by executing: ./$SOFTWARE_FILE"
+  echo "Installation has been successfully completed. You can now run $SOFTWARE_NAME by executing: ./$SOFTWARE_FILE"
 }
 
 function start() {
   check_params "$1"
 
   SOFTWARE_NAME="$1"
+  KERNEL_NAME="$(uname -s)"
 
-  check_os
-  check_dir
+  check_os "$KERNEL_NAME"
+  check_dir "$SOFTWARE_NAME"
 
   if ! check_git; then
-    install_git
+    install_git || { echo "Failed to install git"; exit 1; }
   fi
 
-  install_software "$SOFTWARE_NAME" "$(uname -s)"
+  install_jq || { echo "Failed to install jq"; exit 1; }
+  download_software "$SOFTWARE_NAME" "$KERNEL_NAME"
 }
 
 start "$1"
