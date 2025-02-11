@@ -89,7 +89,7 @@ function download_software() {
 
   echo "Starting to download $SOFTWARE_NAME"
 
-  RELEASE_DATA=$(curl -fsSL https://api.github.com/repos/askaer-solutions/$SOFTWARE_NAME/releases/latest &> /dev/null)
+  RELEASE_DATA=$(curl -fsSL https://api.github.com/repos/askaer-solutions/$SOFTWARE_NAME/releases/latest)
 
   if [[ "$(uname -s)" == "Darwin" ]]; then
     DOWNLOAD_URL=$(echo "$RELEASE_DATA" | jq -r '.assets[] | select(.name | test("macOS")) | .browser_download_url')
