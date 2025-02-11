@@ -74,7 +74,7 @@ function Download-Software {
     catch {
         Write-Host "Failed to get latest release of $SoftwareName"
     }
-
+}
 
 function Start-Installation {
     param (
