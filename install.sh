@@ -18,6 +18,8 @@ function check_os() {
 function check_dir() {
   SOFTWARE_NAME="$1"
   if [[ -n "$(ls -A)" ]]; then
+    echo "The directory is not empty. Found files:"
+    ls -A
     echo "You need to install $SOFTWARE_NAME in an empty directory"
     exit 1
   fi
