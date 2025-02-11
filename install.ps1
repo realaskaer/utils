@@ -65,7 +65,7 @@ function Download-Software {
         $DownloadUrl = $ReleaseData.assets | Where-Object { $_.name -match "windows" } | Select-Object -ExpandProperty browser_download_url
 
         $SoftwareFile = "$SoftwareName" + "_windows.exe"
-        Invoke-WebRequest -Uri $DownloadUrl -OutFile $SoftwareFile -ProgressAction 'Continue'
+        Invoke-WebRequest -Uri $DownloadUrl -OutFile $SoftwareFile
 
         Write-Host "Installation has been successfully completed"
         Write-Host "Starting $SoftwareName"
