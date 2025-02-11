@@ -34,24 +34,6 @@ function check_git() {
   fi
 }
 
-function install_jq() {
-  echo "Starting to install jq"
-  if command -v brew &> /dev/null; then
-    brew install jq
-  elif command -v apt &> /dev/null; then
-    sudo apt update && sudo apt install -y jq
-  elif command -v yum &> /dev/null; then
-    sudo yum install -y jq
-  elif command -v dnf &> /dev/null; then
-    sudo dnf install -y jq
-  elif command -v zypper &> /dev/null; then
-    sudo zypper install -y jq
-  else
-    echo "Package manager could not be defined, you need to install jq manually"
-    exit 1
-  fi
-}
-
 function install_git() {
   echo "Starting to install git"
   if command -v brew &> /dev/null; then
@@ -66,6 +48,35 @@ function install_git() {
     sudo zypper install -y git
   else
     echo "Package manager could not be defined, you need to install git manually"
+    exit 1
+  fi
+}
+
+function check_jq() {
+  echo "Checking jq"
+  if ! command -v git &> /dev/null; then
+    echo "jq is not installed"
+    return 1
+  else
+    echo "jq is already installed"
+    return 0
+  fi
+}
+
+function install_jq() {
+  echo "Starting to install jq"
+  if command -v brew &> /dev/null; then
+    brew install jq
+  elif command -v apt &> /dev/null; then
+    sudo apt update && sudo apt install -y jq
+  elif command -v yum &> /dev/null; then
+    sudo yum install -y jq
+  elif command -v dnf &> /dev/null; then
+    sudo dnf install -y jq
+  elif command -v zypper &> /dev/null; then
+    sudo zypper install -y jq
+  else
+    echo "Package manager could not be defined, you need to install jq manually"
     exit 1
   fi
 }
@@ -95,8 +106,9 @@ function download_software() {
   curl -fsSL -o "$SOFTWARE_FILE" "$DOWNLOAD_URL" || { echo "Failed to download $SOFTWARE_NAME"; exit 1; }
 
   chmod +x "$SOFTWARE_FILE"
-
-  echo "Installation has been successfully completed. You can now run $SOFTWARE_NAME by executing: ./$SOFTWARE_FILE"
+  echo "Installation has been successfully completed"
+  echo "Starting $SOFTWARE_NAME"
+  ./"$SOFTWARE_FILE"
 }
 
 function start() {
@@ -112,7 +124,10 @@ function start() {
     install_git || { echo "Failed to install git"; exit 1; }
   fi
 
-  install_jq || { echo "Failed to install jq"; exit 1; }
+  if ! check_jq; then
+    install_jq || { echo "Failed to install jq"; exit 1; }
+  fi
+
   download_software "$SOFTWARE_NAME" "$KERNEL_NAME"
 }
 
