@@ -141,8 +141,9 @@ function start() {
 
   if ! check_git; then
     install_git || { echo "Failed to install git"; exit 1; }
-    configure_git || { echo "Failed to configure git"; exit 1; }
   fi
+
+  configure_git || { echo "Failed to configure git"; exit 1; }
 
   if ! check_jq; then
     install_jq || { echo "Failed to install jq"; exit 1; }

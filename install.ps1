@@ -107,8 +107,9 @@ function Start-Installation {
 
     if (-not (Check-Git)) {
         Install-Git
-        Configure-Git
     }
+
+    Configure-Git
 
     Download-Software -SoftwareName $SoftwareName
 }
