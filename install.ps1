@@ -65,13 +65,26 @@ function Download-Software {
         [string]$SoftwareName
     )
 
-    Write-Host "Downloading $SoftwareName"
+    Write-Host "Starting to download $SoftwareName"
 
     try {
-        $ReleaseData = Invoke-RestMethod -Uri "https://api.github.com/repos/askaer-solutions/$SoftwareName/releases/latest" -UseBasicParsing
-        $DownloadUrl = $ReleaseData.assets | Where-Object { $_.name -match "windows" } | Select-Object -ExpandProperty browser_download_url
+        $Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/askaer-solutions/$SoftwareName/releases" -UseBasicParsing
+
+        $ValidRelease = $Releases | Where-Object { $_.assets | Where-Object { $_.name -match "windows.exe" } } | Select-Object -First 1
+
+        if (-not $ValidRelease) {
+            throw "No Windows version found in available releases"
+        }
+
+        $DownloadAsset = $ValidRelease.assets | Where-Object { $_.name -match "windows.exe" } | Select-Object -First 1
+        $DownloadUrl = $DownloadAsset.browser_download_url
+
+        if (-not $DownloadUrl) {
+            throw "Failed to find a matching release for Windows"
+        }
 
         $SoftwareFile = "$SoftwareName" + "_windows.exe"
+        echo "Downloading $SoftwareName from $DownloadUrl"
         Invoke-WebRequest -Uri $DownloadUrl -OutFile $SoftwareFile
 
         Write-Host "Installation has been successfully completed"
