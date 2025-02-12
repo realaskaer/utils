@@ -96,15 +96,25 @@ function download_software() {
 
   echo "Starting to download $SOFTWARE_NAME"
 
-  RELEASE_DATA=$(curl -fsSL https://api.github.com/repos/askaer-solutions/$SOFTWARE_NAME/releases/latest)
+  RELEASES=$(curl -fsSL "https://api.github.com/repos/askaer-solutions/$SOFTWARE_NAME/releases")
 
-  if [[ "$(uname -s)" == "Darwin" ]]; then
-    DOWNLOAD_URL=$(echo "$RELEASE_DATA" | jq -r '.assets[] | select(.name | test("macOS")) | .browser_download_url')
-    SOFTWARE_FILE="${SOFTWARE_NAME}_macOS"
+  if [[ "$KERNEL_NAME" == "Darwin" ]]; then
+    PLATFORM="macOS"
   else
-    DOWNLOAD_URL=$(echo "$RELEASE_DATA" | jq -r '.assets[] | select(.name | test("linux")) | .browser_download_url')
-    SOFTWARE_FILE="${SOFTWARE_NAME}_linux"
+    PLATFORM="linux"
   fi
+
+  DOWNLOAD_URL=""
+  SOFTWARE_FILE=""
+  for row in $(echo "$RELEASES" | jq -r '.[] | @base64'); do
+    RELEASE=$(echo "$row" | base64 --decode)
+    DOWNLOAD_URL=$(echo "$RELEASE" | jq -r --arg PLATFORM "$PLATFORM" '.assets[]? | select(.name | test($PLATFORM)) | .browser_download_url')
+    TAG_NAME=$(echo "$RELEASE" | jq -r '.tag_name')
+    if [[ -n "$DOWNLOAD_URL" ]]; then
+      SOFTWARE_FILE="${SOFTWARE_NAME}_${PLATFORM}"
+      break
+    fi
+  done
 
   if [[ -z "$DOWNLOAD_URL" ]]; then
     echo "Failed to get latest release of $SOFTWARE_NAME"
