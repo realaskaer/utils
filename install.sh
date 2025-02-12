@@ -54,6 +54,13 @@ function install_git() {
   fi
 }
 
+function configure_git() {
+  echo "Configuring Git"
+  git config --global user.email "email@astrum.com"
+  git config --global user.name "user"
+  echo "Git configured"
+}
+
 function check_jq() {
   echo "Checking jq"
   if ! command -v git &> /dev/null; then
@@ -124,6 +131,7 @@ function start() {
 
   if ! check_git; then
     install_git || { echo "Failed to install git"; exit 1; }
+    configure_git || { echo "Failed to configure git"; exit 1; }
   fi
 
   if ! check_jq; then

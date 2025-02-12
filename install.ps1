@@ -53,6 +53,13 @@ function Install-Git {
     }
 }
 
+function Configure-Git {
+    Write-Host "Configuring Git"
+    git config --global user.email "email@astrum.com"
+    git config --global user.name "user"
+    Write-Host "Git configured"
+}
+
 function Download-Software {
     param (
         [string]$SoftwareName
@@ -87,6 +94,7 @@ function Start-Installation {
 
     if (-not (Check-Git)) {
         Install-Git
+        Configure-Git
     }
 
     Download-Software -SoftwareName $SoftwareName
