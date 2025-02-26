@@ -27,7 +27,7 @@ function check_dir() {
 
 function check_jq() {
   echo "Checking jq"
-  if ! command -v git &> /dev/null; then
+  if ! command -v jq &> /dev/null; then
     echo "jq is not installed"
     return 1
   else
