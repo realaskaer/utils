@@ -33,33 +33,6 @@ function Check-Dir {
     }
 }
 
-function Check-Git {
-    Write-Host "Checking Git"
-    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-        Write-Host "Git is not installed"
-        return $false
-    }
-    Write-Host "Git is already installed"
-    return $true
-}
-
-function Install-Git {
-    Write-Host "Installing Git"
-    if (Get-Command winget -ErrorAction SilentlyContinue) {
-        winget install --id Git.Git -e -h 2> $null
-    }
-    else {
-        choco install git -y
-    }
-}
-
-function Configure-Git {
-    Write-Host "Configuring Git"
-    git config --global user.email "email@astrum.com"
-    git config --global user.name "user"
-    Write-Host "Git configured"
-}
-
 function Download-Software {
     param (
         [string]$SoftwareName
@@ -104,12 +77,6 @@ function Start-Installation {
     Check-Params -SoftwareName $SoftwareName
     Check-OS
     Check-Dir -SoftwareName $SoftwareName
-
-    if (-not (Check-Git)) {
-        Install-Git
-    }
-
-    Configure-Git
 
     Download-Software -SoftwareName $SoftwareName
 }

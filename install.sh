@@ -25,42 +25,6 @@ function check_dir() {
   fi
 }
 
-function check_git() {
-  echo "Checking Git"
-  if ! command -v git &> /dev/null; then
-    echo "Git is not installed"
-    return 1
-  else
-    echo "Git is already installed"
-    return 0
-  fi
-}
-
-function install_git() {
-  echo "Starting to install git"
-  if command -v brew &> /dev/null; then
-    brew install git
-  elif command -v apt &> /dev/null; then
-    sudo apt update && sudo apt install -y git
-  elif command -v yum &> /dev/null; then
-    sudo yum install -y git
-  elif command -v dnf &> /dev/null; then
-    sudo dnf install -y git
-  elif command -v zypper &> /dev/null; then
-    sudo zypper install -y git
-  else
-    echo "Package manager could not be defined, you need to install git manually"
-    exit 1
-  fi
-}
-
-function configure_git() {
-  echo "Configuring Git"
-  git config --global user.email "email@astrum.com"
-  git config --global user.name "user"
-  echo "Git configured"
-}
-
 function check_jq() {
   echo "Checking jq"
   if ! command -v git &> /dev/null; then
@@ -138,12 +102,6 @@ function start() {
 
   check_os "$KERNEL_NAME"
   check_dir "$SOFTWARE_NAME"
-
-  if ! check_git; then
-    install_git || { echo "Failed to install git"; exit 1; }
-  fi
-
-  configure_git || { echo "Failed to configure git"; exit 1; }
 
   if ! check_jq; then
     install_jq || { echo "Failed to install jq"; exit 1; }
