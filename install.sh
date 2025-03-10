@@ -37,9 +37,9 @@ function check_jq() {
 }
 
 function install_jq() {
-  echo "Starting to install jq"
+  echo "Installing jq"
   if command -v brew &> /dev/null; then
-    brew install jq
+    brew install -y jq
   elif command -v apt &> /dev/null; then
     sudo apt update && sudo apt install -y jq
   elif command -v yum &> /dev/null; then
@@ -50,6 +50,35 @@ function install_jq() {
     sudo zypper install -y jq
   else
     echo "Package manager could not be defined, you need to install jq manually"
+    exit 1
+  fi
+}
+
+function check_node() {
+  echo "Checking Node"
+  if ! command -v node &> /dev/null; then
+    echo "Node is not installed"
+    return 1
+  else
+    echo "Node is already installed"
+    return 0
+  fi
+}
+
+function install_node() {
+  echo "Installing Node"
+  if command -v brew &> /dev/null; then
+    brew install -y node
+  elif command -v apt &> /dev/null; then
+    sudo apt update && sudo apt install -y nodejs
+  elif command -v yum &> /dev/null; then
+    sudo yum install -y nodejs
+  elif command -v dnf &> /dev/null; then
+    sudo dnf install -y nodejs
+  elif command -v zypper &> /dev/null; then
+    sudo zypper install -y nodejs
+  else
+    echo "Package manager could not be defined, you need to install Node manually"
     exit 1
   fi
 }
@@ -105,6 +134,11 @@ function start() {
 
   if ! check_jq; then
     install_jq || { echo "Failed to install jq"; exit 1; }
+  fi
+
+  if ! check_node; then
+    install_node || { echo "Failed to install Node"; exit 1; }
+    echo "Don't forget to restart the terminal for the changes to take effect"
   fi
 
   download_software "$SOFTWARE_NAME" "$KERNEL_NAME"

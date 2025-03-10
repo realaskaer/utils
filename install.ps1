@@ -33,6 +33,27 @@ function Check-Dir {
     }
 }
 
+function Check-Node {
+    Write-Host "Checking Node"
+    if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
+        Write-Host "Node is not installed"
+        return $false
+    }
+    Write-Host "Node is already installed"
+    return $true
+}
+
+function Install-Node {
+    Write-Host "Installing Node"
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install --id OpenJS.NodeJS -e -h --accept-package-agreements 2> $null
+    }
+    else {
+        choco install nodejs -y
+    }
+    Write-Host "Don't forget to restart the terminal for the changes to take effect"
+}
+
 function Download-Software {
     param (
         [string]$SoftwareName
@@ -77,6 +98,10 @@ function Start-Installation {
     Check-Params -SoftwareName $SoftwareName
     Check-OS
     Check-Dir -SoftwareName $SoftwareName
+
+    if (-not (Check-Node)) {
+        Install-Node
+    }
 
     Download-Software -SoftwareName $SoftwareName
 }
